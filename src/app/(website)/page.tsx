@@ -58,7 +58,7 @@ export default function Home() {
                 <Link href="#pricing">Pricing</Link>
                 <Link href="#about">About</Link>
               </nav>
-              <Button className="bg-white text-primary">
+              <Button className="bg-white text-stone-600">
                 <Link href="/dashboard">Login</Link>
               </Button>
             </div>
