@@ -9,8 +9,11 @@ import ClerkAuthState from "../clerk-auth-state";
 import { HelpDuoToneWhite } from "@/icons";
 import { SubscriptionPlan } from "../subscription-plan";
 import UpgradeCard from "../sidebar/upgrade";
-import { Menu, Search } from "lucide-react";
+import { Menu } from "lucide-react";
 import CreateAutomation from "../create-automation";
+import Search from "./search";
+import { Notifications } from "./notifications";
+import MainBreadCrumb from "../bread-crumbs/main-bread-crumb";
 
 type Props = {
   slug: string;
@@ -68,7 +71,9 @@ const Navbar = ({ slug }: Props) => {
           </span>
           <Search />
           <CreateAutomation />
+          <Notifications />
         </div>
+        <MainBreadCrumb page={page === slug ? "Home" : page} slug={slug} />
       </div>
     )
   );
