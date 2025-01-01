@@ -19,7 +19,7 @@ export const PAGE_ICON: Props = {
 };
 export const PAGE_BREAD_CRUMBS: string[] = [
   "contacts",
-  "automation",
+  "automations",
   "integrations",
   "settings",
 ];
