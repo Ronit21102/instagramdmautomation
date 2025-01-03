@@ -1063,3 +1063,224 @@ export default function Page() {
 
 - **Prefetching** in Next.js helps load page assets and data before navigation for faster transitions.
 - **Hydration boundaries** allow partial and isolated hydration to improve performance, user experience, and error resilience. These are essential for optimizing large or complex applications, especially with React 18's concurrent rendering.
+
+The behavior of console logging on the **server** instead of the **client** happens because of the following reasons in Next.js:
+
+### 1. **Next.js Differentiates Server and Client Components**
+   - **Server Components**: Run on the server during rendering.
+   - **Client Components**: Run on the client (browser).
+
+By default, all components in the `app` directory are **server components** unless explicitly marked with `"use client"`. This means:
+- If a component is async (like your `Page` component) and is not marked with `"use client"`, it is treated as a **server component**.
+- The code inside it, including `console.log`, executes on the server.
+
+---
+
+### 2. **Server Actions are Inherently Server-Side**
+   - The `onBoardUser` function is a **server action** (indicated by the `use server` directive or its placement in a server-side module).
+   - When you use `onBoardUser` in a server component, it ensures that the function execution and any `console.log` happen **on the server** because server actions cannot run client-side.
+
+This behavior enforces that server-side logic stays server-side. Even if the `Page` component were marked as a client component (`"use client"`), trying to call a server action like `onBoardUser` would result in an error.
+
+---
+
+### 3. **Async Components Default to Server Context**
+   - The `Page` component in your example is an **async function**:
+     ```tsx
+     const Page = async () => {
+       console.log("dashboard page");
+       const user = await onBoardUser();
+       return <div>Ye</div>;
+     };
+     ```
+   - Async components in Next.js inherently run on the **server** because:
+     - Fetching data (`onBoardUser`) typically happens server-side.
+     - Async operations align with Next.js's server rendering process.
+
+Thus, the presence of `async` signals that the component operates in a **server context**, and all its code, including `console.log`, runs on the server.
+
+---
+
+### 4. **How Next.js Decides Where to Run a Component**
+   - **Server Components**: Rendered on the server.
+     - `console.log` outputs appear in the server logs.
+     - Data fetching and server actions work seamlessly.
+   - **Client Components** (marked with `"use client"`): Rendered on the browser.
+     - `console.log` outputs appear in the browser's developer console.
+     - Server actions (`onBoardUser`) cannot be used.
+
+In your case:
+- Since `Page` is not explicitly marked as `"use client"`, Next.js treats it as a **server component**.
+- Using `onBoardUser`, which is a server action, further confirms the server context.
+- Thus, all `console.log` statements in `Page` execute on the server.
+
+---
+
+### **Example Breakdown**
+#### Case 1: Without `"use client"`
+```tsx
+import { onBoardUser } from "@/actions/user";
+
+const Page = async () => {
+  console.log("dashboard page"); // Logs to the server console.
+  const user = await onBoardUser(); // Server-side data fetching.
+  return <div>Welcome, {user?.name || "Guest"}!</div>;
+};
+
+export default Page;
+```
+- Treated as a **server component**.
+- `console.log` and `onBoardUser` both execute on the server.
+
+#### Case 2: With `"use client"`
+```tsx
+"use client";
+
+const Page = async () => {
+  console.log("dashboard page"); // Logs to the browser console.
+  // Cannot use `onBoardUser` because it's a server action.
+  return <div>Welcome!</div>;
+};
+
+export default Page;
+```
+- Treated as a **client component**.
+- `console.log` outputs to the browser console.
+
+---
+
+### **Key Takeaways**
+- **Async components** in the `app` directory are treated as **server components** by default.
+- Using a **server action** like `onBoardUser` guarantees server-side execution.
+- `console.log` location depends on the component type:
+  - Server component: Logs appear in the server logs.
+  - Client component: Logs appear in the browser console.
+
+Yes, you're absolutely correct!
+
+### Key Difference Between `include` and `select`:
+1. **`select`**:  
+   - Focuses on the fields from the **current model/table**.
+   - Allows you to specify which fields to return **from the same table**.
+
+   Example:
+   ```javascript
+   select: {
+     firstname: true,
+     lastname: true,
+   }
+   ```
+   This returns only the `firstname` and `lastname` from the `User` model.
+
+2. **`include`**:  
+   - Focuses on related models or tables (i.e., foreign key relationships).
+   - Allows you to include data from **related tables/models**.
+
+   Example:
+   ```javascript
+   include: {
+     subscription: true,
+   }
+   ```
+   This includes the `subscription` object, which is a related model linked to the `User` model.
+
+---
+
+### Example for Clarification:
+Assume the following Prisma schema:
+```prisma
+model User {
+  id           String         @id @default(uuid())
+  firstname    String
+  lastname     String
+  email        String
+  subscription Subscription?
+}
+
+model Subscription {
+  id       String @id @default(uuid())
+  plan     String
+  userId   String
+  User     User   @relation(fields: [userId], references: [id])
+}
+```
+
+#### Using `select`
+Query:
+```javascript
+await client.user.findUnique({
+  where: { id: "user123" },
+  select: {
+    firstname: true,
+    lastname: true,
+  },
+});
+```
+
+Result:
+```json
+{
+  "firstname": "John",
+  "lastname": "Doe"
+}
+```
+- This only returns fields from the `User` model.
+
+---
+
+#### Using `include`
+Query:
+```javascript
+await client.user.findUnique({
+  where: { id: "user123" },
+  include: {
+    subscription: true,
+  },
+});
+```
+
+Result:
+```json
+{
+  "id": "user123",
+  "firstname": "John",
+  "lastname": "Doe",
+  "email": "john.doe@example.com",
+  "subscription": {
+    "id": "sub123",
+    "plan": "FREE",
+    "userId": "user123"
+  }
+}
+```
+- This includes the related `subscription` object as well.
+
+---
+
+### Combined Example:
+If you want to fetch specific fields from the `User` model and include related data from the `Subscription` model:
+```javascript
+await client.user.findUnique({
+  where: { id: "user123" },
+  select: {
+    firstname: true,
+    subscription: {
+      select: {
+        plan: true,
+      },
+    },
+  },
+});
+```
+
+Result:
+```json
+{
+  "firstname": "John",
+  "subscription": {
+    "plan": "FREE"
+  }
+}
+``` 
+
+This approach allows precise control over what is returned from both the current table (`User`) and related tables (`Subscription`).
