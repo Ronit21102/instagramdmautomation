@@ -22,7 +22,6 @@ type Props = {
 const Navbar = ({ slug }: Props) => {
   const { page } = usePaths();
   const currentPage = PAGE_BREAD_CRUMBS.includes(page) || page === slug;
-  console.log("currentPage", currentPage);
   return (
     currentPage && (
       <div className="flex flex-col">

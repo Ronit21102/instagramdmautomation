@@ -7,7 +7,6 @@ type Props = {
 };
 
 const MainBreadCrumb = ({ page, slug }: Props) => {
-  console.log("page", page);
   return (
     <div className="flex flex-col items-start">
       {page === "Home" && (

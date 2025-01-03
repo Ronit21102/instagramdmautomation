@@ -1,15 +1,19 @@
-'use server'
+"use server";
 
-import { client } from "@/lib/prisma"
+import { client } from "@/lib/prisma";
 
-export const updateIntegration = async (id: string, token: string, expiresAt: Date) => {
-    return await client.integrations.update({
-        where: {
-            id
-        },
-        data: {
-            token,
-            expiresAt
-        }
-    })
-}
+export const updateIntegration = async (
+  token: string,
+  expiresAt: Date,
+  id: string
+) => {
+  return await client.integrations.update({
+    where: {
+      id,
+    },
+    data: {
+      token,
+      expiresAt,
+    },
+  });
+};
