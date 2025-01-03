@@ -21,11 +21,14 @@ export const useMutationData = (
       if (onSuccess) {
         onSuccess();
       }
-      return toast(data?.status === 201 ? "Success" : "Error", {
+      return toast(data?.status === 200 ? "Success" : "Error", {
         description: data?.data,
       });
     },
+
     onSettled: async () => {
+      await client.refetchQueries({ queryKey: [queryKey] });
+
       return await client.invalidateQueries({ queryKey: [queryKey] });
     },
   });
@@ -38,15 +41,12 @@ export const useMutationDataState = (mutationKey: MutationKey) => {
       mutationKey,
     },
     select: (mutation) => {
-      console.log("mutation", mutation);
       return {
         variables: mutation.state.variables as any,
         status: mutation.state.status,
       };
     },
   });
-  console.log("data", data);
   const latestVariable = data[data.length - 1];
-  console.log("latestVariable", latestVariable);
   return { latestVariable };
 };

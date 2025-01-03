@@ -12,18 +12,20 @@ import { useMutationDataState } from "@/hooks/use-mutaution-data";
 type Props = {};
 
 const AutomationList = (props: Props) => {
+  //To have the debug for fetching the automationList
   const { data } = useQueryAutomations();
   const { latestVariable } = useMutationDataState(["create-automations"]);
   const { pathname } = usePaths();
 
   const optimisticUiData = useMemo(() => {
-    if (latestVariable && latestVariable?.variables && data) {
-      const test = [latestVariable.variables, ...data.data];
+    if (latestVariable && latestVariable?.variables) {
+      const test = [latestVariable.variables, ...(data?.data || [])];
       return { data: test };
     }
     return data || { data: [] };
-
   }, [latestVariable, data]);
+  console.log("optimisticUiData", optimisticUiData);
+
   if (data?.status !== 200 || data?.data.length === 0) {
     return (
       <div className="h-[70vh] flex justify-center items-center flex-col gap-y-3">
@@ -62,7 +64,7 @@ const AutomationList = (props: Props) => {
                       "bg-keyword-red/15 border-2 border-keyword-red"
                   )}
                 >
-                  Get Started
+                  {automation.keywords[0]}
                 </div>
               </div>
             ) : (
