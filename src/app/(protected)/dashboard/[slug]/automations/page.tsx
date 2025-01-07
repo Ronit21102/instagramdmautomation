@@ -1,15 +1,18 @@
-import { Check } from 'lucide-react';
+"use client";
+import { Check } from "lucide-react";
 import CreateAutomation from "@/components/global/create-automation";
 
-import React from 'react'
-import AutomationList from '@/components/global/automation-list';
+import React from "react";
+import AutomationList from "@/components/global/automation-list";
 
-type Props = {}
+type Props = {};
 
 const Page = (props: Props) => {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-6 gap-5">
-      <div className="lg:col-span-4"><AutomationList/></div>
+      <div className="lg:col-span-4">
+        <AutomationList />
+      </div>
       <div className="lg:col-span-2">
         <div className="flex flex-col rounded-xl bg-background-80 gap-y-6 p-5 border-[1px] overflow-hidden border-in-active">
           <div>
@@ -38,6 +41,6 @@ const Page = (props: Props) => {
       </div>
     </div>
   );
-}
+};
 
 export default Page;

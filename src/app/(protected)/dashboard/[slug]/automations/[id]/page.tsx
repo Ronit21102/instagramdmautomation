@@ -1,3 +1,4 @@
+"use client";
 import { getAutomationInfo } from "@/actions/automations";
 import Trigger from "@/components/global/automations/Trigger";
 import AutomationsBreadCrumb from "@/components/global/bread-crumbs/automations";

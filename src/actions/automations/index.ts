@@ -1,5 +1,5 @@
 "use server";
-
+import { addListener } from "./queries";
 import { onCurrentUser } from "../user";
 import {
   createAutomation,
@@ -70,6 +70,27 @@ export const updateAutomationName = async (
       };
     }
     return { status: 404, data: "Automation not updated" };
+  } catch (error) {
+    return { status: 500, data: "Internal server error" };
+  }
+};
+
+export const saveListner = async (
+  automationId: string,
+  listner: "SMARTAI" | "MESSAGE",
+  prompt: string,
+  reply?: string
+) => {
+  await onCurrentUser();
+  try {
+    const create = await addListener(automationId, listner, prompt, reply);
+    if (create) {
+      return {
+        status: 200,
+        data: "Listener created",
+      };
+    }
+    return { status: 404, data: "Listener not created" };
   } catch (error) {
     return { status: 500, data: "Internal server error" };
   }
