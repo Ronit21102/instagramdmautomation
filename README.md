@@ -1284,3 +1284,244 @@ Result:
 ``` 
 
 This approach allows precise control over what is returned from both the current table (`User`) and related tables (`Subscription`).
+
+Exactly! Here's a detailed breakdown of the flow and behavior:
+
+---
+
+### **How Optimistic UI Works in Your Case**
+
+1. **Immediate UI Update (Optimistic UI)**
+   - When you call the `mutate` function with certain variables (e.g., `name`, `id`, etc.), the optimistic UI logic immediately updates the UI **before the server responds**.
+   - This update uses the `variables` passed to the `mutate` function and doesn't depend on the actual server response yet.
+
+   ```tsx
+   mutate({
+     name: "Something",
+     id: mutationId,
+     createdAt: new Date(),
+     keywords: ["something"],
+   });
+   ```
+   - These variables (`name`, `id`, etc.) are added to the UI using `optimisticUiData`.
+
+---
+
+2. **Actual Data from the Server**
+   - After the mutation completes:
+     - The backend processes the request and updates the data source (e.g., a database).
+     - The frontend refetches the updated data using mechanisms like `invalidateQueries` or other query synchronization methods.
+
+   ```typescript
+   onSettled: async () => {
+     return await client.invalidateQueries({ queryKey: [queryKey] });
+   },
+   ```
+
+   - **Outcome**: The optimistic data is replaced with the actual data from the server, ensuring consistency.
+
+---
+
+3. **What Happens Without Optimistic UI**
+   - If you **didn't** implement optimistic UI, the UI would stay unchanged until:
+     1. The server processes the mutation.
+     2. The updated data is fetched and applied to the UI.
+
+   This would create a delay, leading to a less responsive user experience.
+
+---
+
+4. **Who Sets the Final Data?**
+   - The final, authoritative data is set by:
+     - **Default Query Data**: The initial data loaded via the query (e.g., `useQueryAutomations`).
+     - **Backend Response**: When `invalidateQueries` refetches the data after a mutation.
+
+   The optimistic data is only temporary and gets replaced once the actual data is fetched.
+
+---
+
+### **Key Takeaways**
+
+- **Optimistic Data**:
+  - Temporary and based on the `mutate` function's variables.
+  - Provides instant feedback for a smoother user experience.
+  
+- **Actual Data**:
+  - Comes from the server and is authoritative.
+  - Replaces optimistic data after the mutation completes and data is refetched.
+
+- **UI Consistency**:
+  - Optimistic updates ensure responsiveness but rely on the server's response to confirm or adjust the UI.
+
+---
+
+### Example Scenario
+
+1. **User Clicks "Create"**:
+   - Calls `mutate` with optimistic variables: `{ name: "Something", id: mutationId, ... }`.
+   - UI instantly shows this new entry.
+
+2. **Backend Processing**:
+   - Backend creates the automation and returns actual data (e.g., `{ id: 123, name: "Something", createdAt: "..." }`).
+
+3. **Query Refetching**:
+   - `invalidateQueries` fetches the actual data.
+   - UI updates to reflect the backend state, replacing the optimistic entry if needed.
+
+If any issue occurs during this flow (e.g., the backend fails), the UI can handle it gracefully by removing the optimistic update.
+
+
+You're absolutely right about the general flow of Redux and Redux Toolkit: 
+
+1. **Store** contains all the reducers (state logic).
+2. **Slices** define actions and reducers, which are combined into the store.
+3. **Actions** are used to dispatch changes, while reducers determine how the state changes in response to those actions.
+
+Now let’s go step by step to explain how you **use them** in your application:
+
+---
+
+### **1. Set Up the Redux Store in Your Application**
+First, you need to wrap your app with the `Provider` from `react-redux` so the Redux store is accessible throughout your application.
+
+#### Example:
+```javascript
+"use client";
+import { store } from "./store"; // Import your store
+import { Provider } from "react-redux"; // Import Provider
+
+export default function RootLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <Provider store={store}>
+      {children}
+    </Provider>
+  );
+}
+```
+
+### **2. Using State and Dispatch in Components**
+Redux state and actions can be accessed using hooks like `useSelector` and `useDispatch` provided by `react-redux`.
+
+---
+
+#### **Accessing State (`useSelector`)**
+To read data from the Redux store:
+```javascript
+import { useSelector } from "react-redux";
+
+export const MyComponent = () => {
+  const trigger = useSelector((state) => state.AutomationReducer.trigger);
+  
+  return <div>Current Trigger Type: {trigger.type}</div>;
+};
+```
+
+#### **Dispatching Actions (`useDispatch`)**
+To trigger an action that updates the Redux store:
+```javascript
+import { useDispatch } from "react-redux";
+import { AUTOMATION } from "./slices/automation";
+
+export const MyComponent = () => {
+  const dispatch = useDispatch();
+
+  const handleUpdateTrigger = () => {
+    dispatch(AUTOMATION.actions.TRIGGER({ trigger: { type: "COMMENT" } }));
+  };
+
+  return <button onClick={handleUpdateTrigger}>Update Trigger</button>;
+};
+```
+
+---
+
+### **3. How It All Works Together**
+1. **State Access:**
+   - `useSelector` pulls the specific piece of state you want from the store (e.g., `state.AutomationReducer.trigger`).
+
+2. **Dispatch Actions:**
+   - `useDispatch` sends an action to the store (e.g., `AUTOMATION.actions.TRIGGER`).
+   - The action gets handled by the reducer in the slice (e.g., the `TRIGGER` reducer in `AutomationSlice`).
+
+3. **Reducer Updates State:**
+   - The reducer modifies the state based on the action payload.
+   - The updated state is made available to components through `useSelector`.
+
+---
+
+### **Putting It All Together**
+Here’s an end-to-end example:
+
+#### **Slice (automation.ts)**
+```javascript
+import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+
+type TriggerState = {
+  trigger?: { type?: string; keyword?: string };
+};
+
+const initialState: TriggerState = {
+  trigger: { type: undefined, keyword: undefined },
+};
+
+const AutomationSlice = createSlice({
+  name: "automation",
+  initialState,
+  reducers: {
+    TRIGGER: (state, action: PayloadAction<{ trigger: { type: string } }>) => {
+      state.trigger = action.payload.trigger;
+    },
+  },
+});
+
+export const AUTOMATION = AutomationSlice;
+export default AutomationSlice.reducer; // Export reducer
+```
+
+#### **Store (store.ts)**
+```javascript
+import { configureStore, combineReducers } from "@reduxjs/toolkit";
+import AutomationReducer from "./slices/automation";
+
+const rootReducers = combineReducers({
+  AutomationReducer,
+});
+
+export const store = configureStore({
+  reducer: rootReducers,
+});
+```
+
+#### **React Component**
+```javascript
+"use client";
+import React from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { AUTOMATION } from "@/slices/automation";
+
+export const MyComponent = () => {
+  const dispatch = useDispatch();
+  const trigger = useSelector((state) => state.AutomationReducer.trigger);
+
+  const handleUpdateTrigger = () => {
+    dispatch(AUTOMATION.actions.TRIGGER({ trigger: { type: "COMMENT" } }));
+  };
+
+  return (
+    <div>
+      <h1>Trigger Type: {trigger?.type || "None"}</h1>
+      <button onClick={handleUpdateTrigger}>Set Trigger to COMMENT</button>
+    </div>
+  );
+};
+```
+
+---
+
+### **FAQs**
+
+#### Q1: **How do I debug Redux state changes?**
+Use Redux DevTools. Redux Toolkit comes with DevTools enabled by default, so you can inspect actions, state changes, and more in your browser.
+
+#### Q2: **How do I manage asynchronous actions (e.g., API calls)?**
+Use `redux-thunk` (included in Redux Toolkit by default) or `createAsyncThunk` for managing async logic in slices. Let me know if you need a detailed example for `createAsyncThunk`!
