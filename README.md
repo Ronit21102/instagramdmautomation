@@ -1369,3 +1369,159 @@ Exactly! Here's a detailed breakdown of the flow and behavior:
    - UI updates to reflect the backend state, replacing the optimistic entry if needed.
 
 If any issue occurs during this flow (e.g., the backend fails), the UI can handle it gracefully by removing the optimistic update.
+
+
+You're absolutely right about the general flow of Redux and Redux Toolkit: 
+
+1. **Store** contains all the reducers (state logic).
+2. **Slices** define actions and reducers, which are combined into the store.
+3. **Actions** are used to dispatch changes, while reducers determine how the state changes in response to those actions.
+
+Now let’s go step by step to explain how you **use them** in your application:
+
+---
+
+### **1. Set Up the Redux Store in Your Application**
+First, you need to wrap your app with the `Provider` from `react-redux` so the Redux store is accessible throughout your application.
+
+#### Example:
+```javascript
+"use client";
+import { store } from "./store"; // Import your store
+import { Provider } from "react-redux"; // Import Provider
+
+export default function RootLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <Provider store={store}>
+      {children}
+    </Provider>
+  );
+}
+```
+
+### **2. Using State and Dispatch in Components**
+Redux state and actions can be accessed using hooks like `useSelector` and `useDispatch` provided by `react-redux`.
+
+---
+
+#### **Accessing State (`useSelector`)**
+To read data from the Redux store:
+```javascript
+import { useSelector } from "react-redux";
+
+export const MyComponent = () => {
+  const trigger = useSelector((state) => state.AutomationReducer.trigger);
+  
+  return <div>Current Trigger Type: {trigger.type}</div>;
+};
+```
+
+#### **Dispatching Actions (`useDispatch`)**
+To trigger an action that updates the Redux store:
+```javascript
+import { useDispatch } from "react-redux";
+import { AUTOMATION } from "./slices/automation";
+
+export const MyComponent = () => {
+  const dispatch = useDispatch();
+
+  const handleUpdateTrigger = () => {
+    dispatch(AUTOMATION.actions.TRIGGER({ trigger: { type: "COMMENT" } }));
+  };
+
+  return <button onClick={handleUpdateTrigger}>Update Trigger</button>;
+};
+```
+
+---
+
+### **3. How It All Works Together**
+1. **State Access:**
+   - `useSelector` pulls the specific piece of state you want from the store (e.g., `state.AutomationReducer.trigger`).
+
+2. **Dispatch Actions:**
+   - `useDispatch` sends an action to the store (e.g., `AUTOMATION.actions.TRIGGER`).
+   - The action gets handled by the reducer in the slice (e.g., the `TRIGGER` reducer in `AutomationSlice`).
+
+3. **Reducer Updates State:**
+   - The reducer modifies the state based on the action payload.
+   - The updated state is made available to components through `useSelector`.
+
+---
+
+### **Putting It All Together**
+Here’s an end-to-end example:
+
+#### **Slice (automation.ts)**
+```javascript
+import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+
+type TriggerState = {
+  trigger?: { type?: string; keyword?: string };
+};
+
+const initialState: TriggerState = {
+  trigger: { type: undefined, keyword: undefined },
+};
+
+const AutomationSlice = createSlice({
+  name: "automation",
+  initialState,
+  reducers: {
+    TRIGGER: (state, action: PayloadAction<{ trigger: { type: string } }>) => {
+      state.trigger = action.payload.trigger;
+    },
+  },
+});
+
+export const AUTOMATION = AutomationSlice;
+export default AutomationSlice.reducer; // Export reducer
+```
+
+#### **Store (store.ts)**
+```javascript
+import { configureStore, combineReducers } from "@reduxjs/toolkit";
+import AutomationReducer from "./slices/automation";
+
+const rootReducers = combineReducers({
+  AutomationReducer,
+});
+
+export const store = configureStore({
+  reducer: rootReducers,
+});
+```
+
+#### **React Component**
+```javascript
+"use client";
+import React from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { AUTOMATION } from "@/slices/automation";
+
+export const MyComponent = () => {
+  const dispatch = useDispatch();
+  const trigger = useSelector((state) => state.AutomationReducer.trigger);
+
+  const handleUpdateTrigger = () => {
+    dispatch(AUTOMATION.actions.TRIGGER({ trigger: { type: "COMMENT" } }));
+  };
+
+  return (
+    <div>
+      <h1>Trigger Type: {trigger?.type || "None"}</h1>
+      <button onClick={handleUpdateTrigger}>Set Trigger to COMMENT</button>
+    </div>
+  );
+};
+```
+
+---
+
+### **FAQs**
+
+#### Q1: **How do I debug Redux state changes?**
+Use Redux DevTools. Redux Toolkit comes with DevTools enabled by default, so you can inspect actions, state changes, and more in your browser.
+
+#### Q2: **How do I manage asynchronous actions (e.g., API calls)?**
+Use `redux-thunk` (included in Redux Toolkit by default) or `createAsyncThunk` for managing async logic in slices. Let me know if you need a detailed example for `createAsyncThunk`!
