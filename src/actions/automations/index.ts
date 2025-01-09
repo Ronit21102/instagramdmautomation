@@ -1,5 +1,10 @@
 "use server";
-import { addListener } from "./queries";
+import {
+  addKeyword,
+  addListener,
+  addTrigger,
+  deleteKeywordQuery,
+} from "./queries";
 import { onCurrentUser } from "../user";
 import {
   createAutomation,
@@ -91,6 +96,54 @@ export const saveListner = async (
       };
     }
     return { status: 404, data: "Listener not created" };
+  } catch (error) {
+    return { status: 500, data: "Internal server error" };
+  }
+};
+
+export const saveTrigger = async (automationId: string, trigger: string[]) => {
+  await onCurrentUser();
+  try {
+    const create = await addTrigger(automationId, trigger);
+    if (create) {
+      return {
+        status: 200,
+        data: "Trigger created",
+      };
+    }
+    return { status: 404, data: "Trigger not created" };
+  } catch (error) {
+    return { status: 500, data: "Internal server error" };
+  }
+};
+
+export const saveKeyword = async (automationId: string, keyword: string) => {
+  await onCurrentUser();
+  try {
+    const create = await addKeyword(automationId, keyword);
+    if (create) {
+      return {
+        status: 200,
+        data: "Keyword created",
+      };
+    }
+    return { status: 404, data: "Keyword not created" };
+  } catch (error) {
+    return { status: 500, data: "Internal server error" };
+  }
+};
+
+export const deleteKeyword = async ( id: string) => {
+  await onCurrentUser();
+  try {
+    const deletek = await deleteKeywordQuery(id);
+    if (deletek) {
+      return {
+        status: 200,
+        data: "Keyword deleted",
+      };
+    }
+    return { status: 404, data: "Keyword not deleted" };
   } catch (error) {
     return { status: 500, data: "Internal server error" };
   }

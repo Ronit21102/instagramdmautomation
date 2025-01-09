@@ -27,7 +27,6 @@ export const useMutationData = (
     },
 
     onSettled: async () => {
-      await client.refetchQueries({ queryKey: [queryKey] });
 
       return await client.invalidateQueries({ queryKey: [queryKey] });
     },
