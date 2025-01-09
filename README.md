@@ -1525,3 +1525,97 @@ Use Redux DevTools. Redux Toolkit comes with DevTools enabled by default, so you
 
 #### Q2: **How do I manage asynchronous actions (e.g., API calls)?**
 Use `redux-thunk` (included in Redux Toolkit by default) or `createAsyncThunk` for managing async logic in slices. Let me know if you need a detailed example for `createAsyncThunk`!
+
+Great question! Let's focus specifically on this part of the code:
+
+```typescript
+(data: { keyword: string }) => saveKeyword(id, data.keyword)
+```
+
+This function is part of the **`useMutationData` hook's `mutate` function**, which you invoke in the `useKeywords` hook like this:
+
+```typescript
+const { mutate } = useMutationData(
+  ["add-keyword"],
+  (data: { keyword: string }) => saveKeyword(id, data.keyword),
+  "automation-info",
+  () => setKeyword("")
+);
+```
+
+Let’s break it down to **trace where the `data` object is coming from**.
+
+---
+
+### 🧩 **1. The `mutate` Function**
+The `mutate` function in `useMutationData` is returned by React Query's `useMutation` hook. Here's how `mutate` is called in your `useKeywords` hook:
+
+```typescript
+const onKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+  if (e.key === "Enter") {
+    mutate({ keyword });
+    setKeyword("");
+  }
+};
+```
+
+When the user presses the Enter key:
+
+1. `mutate` is called with an object:  
+   ```javascript
+   { keyword: keywordStateValue }
+   ```
+   This is the `data` parameter you see in `(data: { keyword: string })`.
+
+---
+
+### 🛠 **2. How `data` Flows to `saveKeyword`**
+After `mutate` is called, it passes the `data` object to your mutation function:
+
+```typescript
+(data: { keyword: string }) => saveKeyword(id, data.keyword)
+```
+
+So, `data` contains:
+
+- **`data.keyword`**: The keyword entered by the user, which is passed to the `saveKeyword` function.
+
+For example:
+
+- User types "example" in the input field.
+- The `keyword` state becomes `"example"`.
+- When the user presses Enter, `mutate({ keyword: "example" })` is called.
+- `data` becomes `{ keyword: "example" }`.
+- `saveKeyword(id, data.keyword)` sends this keyword to the API.
+
+---
+
+### 🔎 **3. What Does `saveKeyword` Do?**
+The `saveKeyword` function is likely an API call function that sends the keyword to your backend:
+
+```typescript
+const saveKeyword = (id: string, keyword: string) => {
+  return axios.post(`/api/keywords/${id}`, { keyword });
+};
+```
+
+Here:
+
+- **`id`**: The unique identifier of the item/page.
+- **`keyword`**: The keyword entered by the user.
+
+---
+
+### 📝 **Summary of Data Flow**  
+Here’s how the data flows step by step:
+
+| Step         | Action                     | Data Value        |
+|--------------|----------------------------|-------------------|
+| **1**        | User types in input field   | `keyword = "example"` |
+| **2**        | User presses Enter          | `mutate({ keyword: "example" })` |
+| **3**        | `mutate` calls `saveKeyword` | `saveKeyword(id, "example")` |
+| **4**        | API request sent            | `{ keyword: "example" }` |
+
+---
+
+Let me know if you need more clarity! 😊
