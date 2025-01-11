@@ -1525,3 +1525,655 @@ Use Redux DevTools. Redux Toolkit comes with DevTools enabled by default, so you
 
 #### Q2: **How do I manage asynchronous actions (e.g., API calls)?**
 Use `redux-thunk` (included in Redux Toolkit by default) or `createAsyncThunk` for managing async logic in slices. Let me know if you need a detailed example for `createAsyncThunk`!
+
+Great question! Let's focus specifically on this part of the code:
+
+```typescript
+(data: { keyword: string }) => saveKeyword(id, data.keyword)
+```
+
+This function is part of the **`useMutationData` hook's `mutate` function**, which you invoke in the `useKeywords` hook like this:
+
+```typescript
+const { mutate } = useMutationData(
+  ["add-keyword"],
+  (data: { keyword: string }) => saveKeyword(id, data.keyword),
+  "automation-info",
+  () => setKeyword("")
+);
+```
+
+Let’s break it down to **trace where the `data` object is coming from**.
+
+---
+
+### 🧩 **1. The `mutate` Function**
+The `mutate` function in `useMutationData` is returned by React Query's `useMutation` hook. Here's how `mutate` is called in your `useKeywords` hook:
+
+```typescript
+const onKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+  if (e.key === "Enter") {
+    mutate({ keyword });
+    setKeyword("");
+  }
+};
+```
+
+When the user presses the Enter key:
+
+1. `mutate` is called with an object:  
+   ```javascript
+   { keyword: keywordStateValue }
+   ```
+   This is the `data` parameter you see in `(data: { keyword: string })`.
+
+---
+
+### 🛠 **2. How `data` Flows to `saveKeyword`**
+After `mutate` is called, it passes the `data` object to your mutation function:
+
+```typescript
+(data: { keyword: string }) => saveKeyword(id, data.keyword)
+```
+
+So, `data` contains:
+
+- **`data.keyword`**: The keyword entered by the user, which is passed to the `saveKeyword` function.
+
+For example:
+
+- User types "example" in the input field.
+- The `keyword` state becomes `"example"`.
+- When the user presses Enter, `mutate({ keyword: "example" })` is called.
+- `data` becomes `{ keyword: "example" }`.
+- `saveKeyword(id, data.keyword)` sends this keyword to the API.
+
+---
+
+### 🔎 **3. What Does `saveKeyword` Do?**
+The `saveKeyword` function is likely an API call function that sends the keyword to your backend:
+
+```typescript
+const saveKeyword = (id: string, keyword: string) => {
+  return axios.post(`/api/keywords/${id}`, { keyword });
+};
+```
+
+Here:
+
+- **`id`**: The unique identifier of the item/page.
+- **`keyword`**: The keyword entered by the user.
+
+---
+
+### 📝 **Summary of Data Flow**  
+Here’s how the data flows step by step:
+
+| Step         | Action                     | Data Value        |
+|--------------|----------------------------|-------------------|
+| **1**        | User types in input field   | `keyword = "example"` |
+| **2**        | User presses Enter          | `mutate({ keyword: "example" })` |
+| **3**        | `mutate` calls `saveKeyword` | `saveKeyword(id, "example")` |
+| **4**        | API request sent            | `{ keyword: "example" }` |
+
+---
+
+Let's break down the `getProfilePosts` function and the Instagram URL you're using to fetch data:
+
+---
+
+## 🧩 **Function Explanation:**
+
+```javascript
+export const getProfilePosts = async () => {
+  const user = await onCurrentUser(); // Gets the currently logged-in user
+  try {
+    const profile = await findUser(user.id); // Finds the user's profile from your database
+    const posts = await fetch(
+      `${process.env.INSTAGRAM_BASE_URL}/me/media?fields=id,caption,media_url,media_type,timestamp&limit=10&access_token=${profile?.integrations[0].token}`
+    );
+    const parsed = await posts.json(); // Parses the response to JSON
+    if (parsed) return { status: 200, data: parsed }; // Returns the data if successful
+    console.log("🔴 Error in getting posts");
+    return { status: 404 }; // Returns 404 if no data is found
+  } catch (error) {
+    console.log("🔴 server side Error in getting posts ", error); // Logs the error if any
+    return { status: 500 }; // Returns 500 if there's a server-side error
+  }
+};
+```
+
+---
+
+## 📖 **Breaking Down the Instagram URL:**
+
+```javascript
+`${process.env.INSTAGRAM_BASE_URL}/me/media?fields=id,caption,media_url,media_type,timestamp&limit=10&access_token=${profile?.integrations[0].token}`
+```
+
+### 🔑 **What is This URL?**
+
+This URL is making a **Graph API request to Instagram** to retrieve **media posts** from the logged-in user's Instagram account. Here's how it works:
+
+### ✅ **Base URL:**
+```javascript
+process.env.INSTAGRAM_BASE_URL
+```
+- The base URL is coming from your `.env` file.
+- It should be set to:
+
+```
+INSTAGRAM_BASE_URL=https://graph.instagram.com
+```
+
+So the full request URL becomes:
+
+```
+https://graph.instagram.com/me/media
+```
+
+---
+
+### ✅ **Endpoint Explanation:**
+- **`/me/media`**: This is the endpoint to get the **media posts** (photos, videos, etc.) from the authenticated user's Instagram account.
+
+---
+
+### ✅ **Query Parameters:**
+
+| Parameter         | Description                                                      |
+|-------------------|------------------------------------------------------------------|
+| **`fields`**      | Specifies the fields you want in the response (e.g., `id`, `caption`, etc.). |
+| **`limit=10`**    | Limits the number of posts retrieved to **10** per request.       |
+| **`access_token`**| The **access token** used to authenticate the request.            |
+
+---
+
+### ✅ **Fields Requested:**
+You are requesting the following fields:
+
+| Field         | Description                                          |
+|---------------|------------------------------------------------------|
+| **`id`**      | The unique identifier for each media post.           |
+| **`caption`** | The text caption of the media post.                  |
+| **`media_url`** | The URL of the media (photo/video).                |
+| **`media_type`** | The type of media (e.g., `IMAGE`, `VIDEO`, `CAROUSEL_ALBUM`). |
+| **`timestamp`** | The date and time when the media post was created. |
+
+---
+
+### ✅ **Access Token:**
+```javascript
+access_token=${profile?.integrations[0].token}
+```
+
+- The access token is retrieved from your **database** (`profile?.integrations[0].token`).
+- It is required to authenticate the request with Instagram's Graph API.
+
+---
+
+### ✅ **Response Example:**
+
+If the request is successful, you'll get a response like this:
+
+```json
+{
+  "data": [
+    {
+      "id": "17895695668004550",
+      "caption": "Sunset view from the beach 🌅",
+      "media_url": "https://instagram.fxyz1-1.fna.fbcdn.net/.../12345_n.jpg",
+      "media_type": "IMAGE",
+      "timestamp": "2024-01-10T12:34:56+0000"
+    },
+    {
+      "id": "17895695712345678",
+      "caption": "Exploring the mountains 🏔️",
+      "media_url": "https://instagram.fxyz1-1.fna.fbcdn.net/.../67890_n.jpg",
+      "media_type": "IMAGE",
+      "timestamp": "2024-01-09T15:20:30+0000"
+    }
+  ]
+}
+```
+
+---
+
+### ✅ **Error Handling:**
+If there is an error, the function catches it and logs it:
+
+```javascript
+console.log("🔴 server side Error in getting posts ", error);
+```
+
+It then returns a **500 status** to indicate a **server-side error**.
+
+---
+
+### ⚙️ **What to Ensure:**
+1. **Instagram API Access**  
+   Ensure the user has given permission to access their media through the **Instagram Graph API**.
+
+2. **Access Token Validity**  
+   The access token should be **valid and not expired**.
+
+3. **Permissions**  
+   Ensure your app has the necessary **scopes/permissions**:
+   - `user_media`
+   - `user_profile`
+
+---
+
+### ✅ **Final URL Example:**
+
+```
+https://graph.instagram.com/me/media?fields=id,caption,media_url,media_type,timestamp&limit=10&access_token=YOUR_ACCESS_TOKEN
+```
+Ah! You want to know **how Instagram internally uses the Graph API** to serve its data — essentially, how the underlying architecture works when Instagram fetches posts, media, comments, etc., through Graph API endpoints.
+
+Here’s a **deep dive** into how Instagram’s backend might be structured to work with the **Graph API**:
+
+---
+
+## 🧩 **1. What Is the Graph API?**
+The **Graph API** is a way of organizing **data as a graph structure** rather than traditional REST endpoints. Instead of accessing different resources via separate endpoints (like `/posts`, `/users`, etc.), a **Graph API** allows clients to query **connected nodes (users, posts, media)** and specify exactly which data fields they want to retrieve.
+
+Think of it as a **relational map** where:
+
+- **User** → has many → **Posts**
+- **Post** → has many → **Comments**
+- **Media** → belongs to → **User**
+
+---
+
+## 🔧 **2. How Instagram Might Be Using the Graph API Internally**
+Here’s how **Instagram's backend** might work:
+
+1. **User Authentication**  
+   When you log into Instagram, you authorize the app via **OAuth**. Instagram stores your **access token** and uses it to verify your identity for subsequent API requests.
+
+2. **Data Storage**  
+   Instagram stores its data in a **relational database (e.g., Postgres)** or a **graph database (e.g., Neo4j)**. The Graph API acts as a **layer on top of the database** to query this structured data.
+
+3. **Data Fetching via Nodes and Edges**  
+   When you request data via the Graph API, Instagram fetches **connected nodes** (e.g., user → posts → media) from its database.
+
+   For example:
+   - The **`/me/media` endpoint** queries the **User Node** and fetches the **Media Nodes** connected to that user.
+
+4. **Efficient Query Execution**  
+   Instead of sending multiple queries to fetch user details, posts, media, and comments separately, the Graph API aggregates everything into **one optimized query**. The backend engine **resolves these relationships efficiently**.
+
+---
+
+### **3. Example of How Instagram Graph API Works Internally**
+Let’s break down what happens when you hit this endpoint:
+
+```plaintext
+GET https://graph.instagram.com/me/media?fields=id,caption,media_url,media_type,timestamp&access_token=ACCESS_TOKEN
+```
+
+#### 🔹 **Step 1: Access Control**
+- The **access token** is validated to ensure the user is authenticated.
+- Instagram checks if the token has the right **permissions (scopes)**.
+
+#### 🔹 **Step 2: Query Execution**
+The backend executes a **Graph Query** to fetch data. For example:
+
+```graphql
+{
+  me {
+    id
+    media(limit: 10) {
+      id
+      caption
+      media_url
+      media_type
+      timestamp
+    }
+  }
+}
+```
+
+The backend system resolves this query:
+
+1. **Find the User Node (`me`)**  
+   Query the database for the user associated with the access token.
+
+2. **Get Media Nodes (`media`)**  
+   Fetch the **media posts** connected to that user in the graph.
+
+3. **Apply Fields and Filters**  
+   Return only the fields specified in the query (`id`, `caption`, etc.).
+
+---
+
+### **4. How Instagram Maps Data to Graph API**
+
+| **Graph Node**   | **Database Table**         | **Fields**                        |
+|------------------|----------------------------|-----------------------------------|
+| `User`           | `users`                    | `id`, `username`, `email`         |
+| `Media`          | `media_posts`              | `id`, `caption`, `media_url`      |
+| `Comments`       | `comments`                 | `id`, `text`, `timestamp`         |
+| `Likes`          | `likes`                    | `id`, `user_id`, `post_id`        |
+
+**Example: Database Query Execution**
+
+```sql
+SELECT * FROM users WHERE id = '123';
+SELECT * FROM media_posts WHERE user_id = '123' LIMIT 10;
+```
+
+The Graph API then **formats the result as JSON** and sends it back to the client.
+
+---
+
+### 🧑‍💻 **5. How Instagram Handles API Queries Efficiently**
+
+#### 🔹 **Database Layer:**
+Instagram likely uses a combination of:
+
+- **Relational Database (PostgreSQL/MySQL)** for structured data
+- **Graph Database (Neo4j/ArangoDB)** for relationships
+- **Caching Layer (Redis)** to serve frequently requested data quickly
+
+#### 🔹 **GraphQL Resolver:**
+They might have **GraphQL resolvers** to handle complex queries. A resolver is a function that knows **how to fetch data for a specific field** in a query.
+
+Example:
+
+```javascript
+const resolvers = {
+  Query: {
+    me: (parent, args, context) => {
+      return getUser(context.user.id);
+    },
+    media: (parent, { limit }, context) => {
+      return getUserMedia(context.user.id, limit);
+    },
+  },
+};
+```
+
+---
+
+### 📦 **6. Instagram Graph API vs. Traditional REST API**
+
+| **Aspect**          | **Graph API**                              | **Traditional REST API**                     |
+|---------------------|--------------------------------------------|---------------------------------------------|
+| **Data Fetching**    | Fetch related data in one request          | Multiple requests to different endpoints    |
+| **Flexibility**      | Clients choose the data they need          | Fixed endpoints with predefined responses   |
+| **Efficiency**       | Reduces over-fetching and under-fetching   | May result in unnecessary data being sent   |
+| **Relationships**    | Handles relationships natively             | Relationships require multiple requests     |
+
+---
+
+### **Example Code for Graph API Request Handling**
+
+Here’s an example of how Instagram might handle the request on the backend:
+
+```javascript
+const express = require('express');
+const app = express();
+const db = require('./database'); // Hypothetical database connection
+
+app.get('/me/media', async (req, res) => {
+  const { access_token, fields, limit } = req.query;
+
+  // Step 1: Validate Access Token
+  const user = await validateAccessToken(access_token);
+  if (!user) {
+    return res.status(401).json({ error: 'Invalid access token' });
+  }
+
+  // Step 2: Fetch Media Posts
+  const media = await db.query(
+    'SELECT ?? FROM media_posts WHERE user_id = ? LIMIT ?',
+    [fields.split(','), user.id, limit]
+  );
+
+  // Step 3: Send Response
+  res.json({ data: media });
+});
+
+app.listen(3000, () => {
+  console.log('Server running on port 3000');
+});
+```
+
+---
+
+### **7. Key Takeaways**
+
+1. The **Graph API** is a more efficient way to fetch related data compared to REST.
+2. Instagram likely uses a combination of **relational and graph databases** to power their Graph API.
+3. The backend uses **Graph Queries** to optimize how data is fetched and resolved.
+4. The **access token** is critical for securing API requests.
+
+You're absolutely right! A **normal REST API** can also be designed to retrieve **related data** from multiple databases and return it in a **single request**. The **difference between a Graph API and a normal REST API** isn’t that one *can* get related data and the other *cannot* — the key difference lies in **how flexible and efficient** the queries are.
+
+Let's break down this comparison so you can see **why Instagram (or other companies) might choose the Graph API approach over REST**, despite the fact that REST can technically achieve the same result.
+
+---
+
+## ⚖️ **REST API vs. Graph API: Key Differences**
+
+| Aspect                 | REST API                                             | Graph API                                            |
+|------------------------|------------------------------------------------------|-----------------------------------------------------|
+| **Data Structure**      | Fixed endpoints (e.g., `/users`, `/posts`)           | Flexible queries (`me { posts { id, caption } }`)   |
+| **Flexibility**         | Predefined response shape                            | Client defines the exact fields they need           |
+| **Over-fetching/Under-fetching** | May send unnecessary or incomplete data        | Sends exactly what the client asks for              |
+| **Relationships**       | Requires additional endpoints for nested resources   | Handles nested resources in a single query          |
+| **Efficiency**          | Multiple endpoints for related data                 | One request can fetch all related data              |
+| **Example**             | `/users/1/posts`                                    | `query { user(id: 1) { id, posts { id, caption } } }` |
+
+---
+
+### 🤔 **But Why Not Just Build a Custom REST API That Returns Everything?**
+
+You could build a REST API that fetches **all the related data** in a single request. For example:
+
+```plaintext
+GET /profile/posts
+```
+
+**Response:**
+
+```json
+{
+  "user": {
+    "id": "123",
+    "name": "John Doe",
+    "posts": [
+      {
+        "id": "456",
+        "caption": "Hello World",
+        "media_url": "https://example.com/image.jpg",
+        "timestamp": "2025-01-10T12:00:00Z"
+      }
+    ]
+  }
+}
+```
+
+However, the **main problem with this approach** is **lack of flexibility**:
+
+1. **Fixed Response Shape:**  
+   - The response format is fixed. If the client wants to fetch additional fields (like `comments` or `likes`), you need to modify the backend and create new endpoints or add query parameters.
+
+2. **Over-fetching Data:**  
+   - The API might return data that the client doesn’t need, resulting in **larger payloads** and **slower performance**.
+
+3. **Under-fetching Data:**  
+   - The client may need more related data (like `comments` for each post), requiring **additional requests**.
+
+---
+
+### 🕵️ **Example: REST API vs. Graph API in Practice**
+
+#### 🔵 **REST API:**
+
+If a client wants to fetch:
+
+1. **User Info**
+2. **Posts**
+3. **Comments for Each Post**
+
+You might have the following endpoints:
+
+```plaintext
+GET /users/123
+GET /users/123/posts
+GET /posts/456/comments
+```
+
+This requires **three separate API calls**.
+
+---
+
+#### 🟢 **Graph API:**
+
+With the Graph API, you can achieve the same thing with **one request**:
+
+```graphql
+{
+  user(id: "123") {
+    id
+    name
+    posts {
+      id
+      caption
+      comments {
+        id
+        text
+      }
+    }
+  }
+}
+```
+
+**One request = all related data fetched efficiently.**
+
+---
+
+### 📦 **Why Instagram Uses Graph API Internally**
+
+Here’s why **Instagram** might prefer using the Graph API internally:
+
+1. **Dynamic Data Needs**  
+   - Different parts of the app (feed, profile, stories) need **different subsets** of data. A **Graph API** allows the client to specify exactly what they need.
+
+2. **Efficient Query Resolution**  
+   - Instead of hitting **multiple REST endpoints**, the Graph API allows **one optimized query** to retrieve everything at once.
+
+3. **Client-Specific Responses**  
+   - Instagram can serve **different clients (web, mobile, third-party apps)** without modifying backend endpoints. Each client can request only the fields they need.
+
+---
+
+### 🛠 **How a Custom REST API Would Work (Example Code)**
+
+Here’s how you might write a **custom REST API** to fetch **related data** in a single request:
+
+```javascript
+const express = require('express');
+const app = express();
+const db = require('./db'); // Hypothetical database connection
+
+// Fetch user profile with posts
+app.get('/profile/posts', async (req, res) => {
+  try {
+    const userId = req.query.userId;
+    
+    // Fetch user
+    const user = await db.query('SELECT * FROM users WHERE id = ?', [userId]);
+    
+    // Fetch user's posts
+    const posts = await db.query('SELECT * FROM posts WHERE user_id = ?', [userId]);
+
+    // Fetch comments for each post
+    for (let post of posts) {
+      post.comments = await db.query('SELECT * FROM comments WHERE post_id = ?', [post.id]);
+    }
+
+    // Return combined data
+    res.json({ user, posts });
+  } catch (error) {
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+app.listen(3000, () => {
+  console.log('Server is running on port 3000');
+});
+```
+
+---
+
+### 🚀 **How Instagram Might Be Using Graph API**
+
+Here’s how **Instagram might implement their Graph API** using **Node.js and a GraphQL library**:
+
+```javascript
+const { ApolloServer, gql } = require('apollo-server');
+
+// Type definitions
+const typeDefs = gql`
+  type User {
+    id: ID!
+    name: String!
+    posts: [Post]
+  }
+
+  type Post {
+    id: ID!
+    caption: String!
+    media_url: String!
+    comments: [Comment]
+  }
+
+  type Comment {
+    id: ID!
+    text: String!
+  }
+
+  type Query {
+    user(id: ID!): User
+  }
+`;
+
+// Resolvers
+const resolvers = {
+  Query: {
+    user: async (_, { id }) => {
+      // Fetch user from database
+      const user = await db.query('SELECT * FROM users WHERE id = ?', [id]);
+
+      // Fetch posts for user
+      user.posts = await db.query('SELECT * FROM posts WHERE user_id = ?', [id]);
+
+      // Fetch comments for each post
+      for (let post of user.posts) {
+        post.comments = await db.query('SELECT * FROM comments WHERE post_id = ?', [post.id]);
+      }
+
+      return user;
+    },
+  },
+};
+
+// Create and run server
+const server = new ApolloServer({ typeDefs, resolvers });
+server.listen().then(({ url }) => {
+  console.log(`🚀 Server ready at ${url}`);
+});
+```
+
+---
+
+### 🔑 **Key Takeaways**
+
+1. **REST APIs can achieve what Graph APIs do**, but they require more careful endpoint design to avoid over-fetching or under-fetching.
+2. **Graph APIs are more flexible**, allowing clients to define the data they need in a single request.
+3. **Instagram uses the Graph API** internally to efficiently serve data for its app and third-party integrations.
+
