@@ -1,17 +1,17 @@
-"use client";
-import { Separator } from "@/components/ui/separator";
-import { useQueryAutomation } from "@/hooks/use-queries";
-import { PlaneBlue, SmartAi, Warning } from "@/icons";
-import React from "react";
-import PostButton from "../post";
+'use client'
+import { Separator } from '@/components/ui/separator'
+import { useQueryAutomation } from '@/hooks/user-queries'
+import { PlaneBlue, SmartAi, Warning } from '@/icons'
+import React from 'react'
+import PostButton from '../post'
 
 type Props = {
-  id: string;
-};
+  id: string
+}
 
 const ThenNode = ({ id }: Props) => {
-  const { data } = useQueryAutomation(id);
-  const commentTrigger = data?.data?.trigger.find((t) => t.type === "COMMENT");
+  const { data } = useQueryAutomation(id)
+  const commentTrigger = data?.data?.trigger.find((t) => t.type === 'COMMENT')
 
   return !data?.data?.listener ? (
     <></>
@@ -31,15 +31,15 @@ const ThenNode = ({ id }: Props) => {
       </div>
       <div className="bg-background-80 p-3 rounded-xl flex flex-col gap-y-2">
         <div className="flex gap-x-2 items-center">
-          {data.data.listener.listener === "MESSAGE" ? (
+          {data.data.listener.listener === 'MESSAGE' ? (
             <PlaneBlue />
           ) : (
             <SmartAi />
           )}
           <p className=" text-lg">
-            {data.data.listener.listener === "MESSAGE"
-              ? "Send the user a message."
-              : "Let Smart AI take over"}
+            {data.data.listener.listener === 'MESSAGE'
+              ? 'Send the user a message.'
+              : 'Let Smart AI take over'}
           </p>
         </div>
         <p className="flont-light text-text-secondary">
@@ -54,7 +54,7 @@ const ThenNode = ({ id }: Props) => {
         <></>
       )}
     </div>
-  );
-};
+  )
+}
 
-export default ThenNode;
+export default ThenNode

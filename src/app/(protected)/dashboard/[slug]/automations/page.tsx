@@ -1,13 +1,12 @@
-"use client";
-import { Check } from "lucide-react";
-import CreateAutomation from "@/components/global/create-automation";
+import AutomationList from '@/components/global/automation-list'
+import CreateAutomation from '@/components/global/create-automation'
+import { Check } from 'lucide-react'
+import React from 'react'
 
-import React from "react";
-import AutomationList from "@/components/global/automation-list";
-
-type Props = {};
+type Props = {}
 
 const Page = (props: Props) => {
+
   return (
     <div className="grid grid-cols-1 lg:grid-cols-6 gap-5">
       <div className="lg:col-span-4">
@@ -23,7 +22,10 @@ const Page = (props: Props) => {
           </div>
           <div className="flex flex-col gap-y-3">
             {[1, 2, 3].map((item) => (
-              <div key={item} className="flex items-start justify-between">
+              <div
+                key={item}
+                className="flex items-start justify-between"
+              >
                 <div className="flex flex-col">
                   <h3 className="font-medium">
                     Direct traffic towards website
@@ -40,7 +42,7 @@ const Page = (props: Props) => {
         </div>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default Page;
+export default Page

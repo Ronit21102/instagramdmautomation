@@ -1,8 +1,8 @@
-import { Input } from "@/components/ui/input";
-import { SearchIcon } from "lucide-react";
-import React from "react";
+import { Input } from '@/components/ui/input'
+import { SearchIcon } from 'lucide-react'
+import React from 'react'
 
-type Props = {};
+type Props = {}
 
 const Search = (props: Props) => {
   return (
@@ -13,7 +13,7 @@ const Search = (props: Props) => {
         className="border-none outline-none ring-0 focus:ring-0 flex-1"
       />
     </div>
-  );
-};
+  )
+}
 
-export default Search;
+export default Search

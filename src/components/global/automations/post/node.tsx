@@ -1,16 +1,16 @@
-"use client";
-import { Separator } from "@/components/ui/separator";
-import { useQueryAutomation } from "@/hooks/use-queries";
-import { InstagramBlue, Warning } from "@/icons";
-import Image from "next/image";
-import React from "react";
+'use client'
+import { Separator } from '@/components/ui/separator'
+import { useQueryAutomation } from '@/hooks/user-queries'
+import { InstagramBlue, Warning } from '@/icons'
+import Image from 'next/image'
+import React from 'react'
 
 type Props = {
-  id: string;
-};
+  id: string
+}
 
 const PostNode = ({ id }: Props) => {
-  const { data } = useQueryAutomation(id);
+  const { data } = useQueryAutomation(id)
 
   return (
     data?.data &&
@@ -39,14 +39,19 @@ const PostNode = ({ id }: Props) => {
                 key={post.id}
                 className="relative w-4/12 aspect-square rounded-lg cursor-pointer overflow-hidden"
               >
-                <Image fill sizes="100vw" src={post.media} alt="post image" />
+                <Image
+                  fill
+                  sizes="100vw"
+                  src={post.media}
+                  alt="post image"
+                />
               </div>
             ))}
           </div>
         </div>
       </div>
     )
-  );
-};
+  )
+}
 
-export default PostNode;
+export default PostNode

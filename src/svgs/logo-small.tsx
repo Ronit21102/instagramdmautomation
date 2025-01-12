@@ -25,7 +25,12 @@ export const LogoSmall = () => {
         stroke="#AABBFF"
         stroke-width="5.10995"
       />
-      <circle cx="41.0184" cy="20.1204" r="2.87435" fill="#AABBFF" />
+      <circle
+        cx="41.0184"
+        cy="20.1204"
+        r="2.87435"
+        fill="#AABBFF"
+      />
     </svg>
-  );
-};
+  )
+}

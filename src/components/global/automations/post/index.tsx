@@ -1,21 +1,21 @@
-import { useAutomationPosts } from "@/hooks/use-automations";
-import { useQueryAutomationPosts } from "@/hooks/use-queries";
-import React from "react";
-import TriggerButton from "../trigger-button";
-import { InstagramPostProps } from "@/types/posts.types";
-import { CheckCircle } from "lucide-react";
-import Image from "next/image";
-import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
-import Loader from "../../loader";
+import { useAutomationPosts } from '@/hooks/use-automations'
+import { useQueryAutomationPosts } from '@/hooks/user-queries'
+import React from 'react'
+import TriggerButton from '../trigger-button'
+import { InstagramPostProps } from '@/types/posts.type'
+import { CheckCircle } from 'lucide-react'
+import Image from 'next/image'
+import { cn } from '@/lib/utils'
+import { Button } from '@/components/ui/button'
+import Loader from '../../loader'
 
 type Props = {
-  id: string;
-};
+  id: string
+}
 
 const PostButton = ({ id }: Props) => {
-  const { data } = useQueryAutomationPosts();
-  const { posts, onSelectPost, mutate, isPending } = useAutomationPosts(id);
+  const { data } = useQueryAutomationPosts()
+  const { posts, onSelectPost, mutate, isPending } = useAutomationPosts(id)
 
   return (
     <TriggerButton label="Attach a post">
@@ -48,8 +48,8 @@ const PostButton = ({ id }: Props) => {
                   src={post.media_url}
                   alt="post image"
                   className={cn(
-                    "hover:opacity-75 transition duration-100",
-                    posts.find((p) => p.postid === post.id) && "opacity-75"
+                    'hover:opacity-75 transition duration-100',
+                    posts.find((p) => p.postid === post.id) && 'opacity-75'
                   )}
                 />
               </div>
@@ -67,7 +67,7 @@ const PostButton = ({ id }: Props) => {
         <p className="text-text-secondary text-center">No posts found!</p>
       )}
     </TriggerButton>
-  );
-};
+  )
+}
 
-export default PostButton;
+export default PostButton

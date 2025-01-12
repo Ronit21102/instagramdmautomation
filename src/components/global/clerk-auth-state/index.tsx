@@ -1,22 +1,22 @@
-import React from "react";
+import React from 'react'
 import {
   ClerkLoading,
   SignedIn,
   SignedOut,
   SignInButton,
   UserButton,
-} from "@clerk/nextjs";
-import { User } from "lucide-react";
-import Loader from "../loader";
-import { Button } from "@/components/ui/button";
+} from '@clerk/nextjs'
+import { User } from 'lucide-react'
+import Loader from '../loader'
+import { Button } from '@/components/ui/button'
 
-type Props = {};
+type Props = {}
 
 const ClerkAuthState = (props: Props) => {
   return (
     <>
       <ClerkLoading>
-        <Loader state={false}>
+        <Loader state>
           <></>
         </Loader>
       </ClerkLoading>
@@ -44,7 +44,7 @@ const ClerkAuthState = (props: Props) => {
         </UserButton>
       </SignedIn>
     </>
-  );
-};
+  )
+}
 
-export default ClerkAuthState;
+export default ClerkAuthState

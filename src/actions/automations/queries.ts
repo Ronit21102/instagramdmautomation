@@ -1,7 +1,7 @@
-"use server";
+'use server'
 
-import { client } from "@/lib/prisma";
-import { v4 } from "uuid";
+import { client } from '@/lib/prisma'
+import { v4 } from 'uuid'
 
 export const createAutomation = async (clerkId: string, id?: string) => {
   return await client.user.update({
@@ -11,12 +11,12 @@ export const createAutomation = async (clerkId: string, id?: string) => {
     data: {
       automations: {
         create: {
-          ...(id && { id: v4() }),
+          ...(id && { id }),
         },
       },
     },
-  });
-};
+  })
+}
 
 export const getAutomations = async (clerkId: string) => {
   return await client.user.findUnique({
@@ -26,7 +26,7 @@ export const getAutomations = async (clerkId: string) => {
     select: {
       automations: {
         orderBy: {
-          createdAt: "asc",
+          createdAt: 'asc',
         },
         include: {
           keywords: true,
@@ -34,8 +34,8 @@ export const getAutomations = async (clerkId: string) => {
         },
       },
     },
-  });
-};
+  })
+}
 
 export const findAutomation = async (id: string) => {
   return await client.automation.findUnique({
@@ -54,27 +54,28 @@ export const findAutomation = async (id: string) => {
         },
       },
     },
-  });
-};
+  })
+}
 
 export const updateAutomation = async (
   id: string,
-  update: { name?: string; active?: boolean }
+  update: {
+    name?: string
+    active?: boolean
+  }
 ) => {
   return await client.automation.update({
-    where: {
-      id,
-    },
+    where: { id },
     data: {
       name: update.name,
       active: update.active,
     },
-  });
-};
+  })
+}
 
 export const addListener = async (
   automationId: string,
-  listener: "SMARTAI" | "MESSAGE",
+  listener: 'SMARTAI' | 'MESSAGE',
   prompt: string,
   reply?: string
 ) => {
@@ -91,15 +92,13 @@ export const addListener = async (
         },
       },
     },
-  });
-};
+  })
+}
 
 export const addTrigger = async (automationId: string, trigger: string[]) => {
   if (trigger.length === 2) {
     return await client.automation.update({
-      where: {
-        id: automationId,
-      },
+      where: { id: automationId },
       data: {
         trigger: {
           createMany: {
@@ -107,7 +106,7 @@ export const addTrigger = async (automationId: string, trigger: string[]) => {
           },
         },
       },
-    });
+    })
   }
   return await client.automation.update({
     where: {
@@ -120,11 +119,11 @@ export const addTrigger = async (automationId: string, trigger: string[]) => {
         },
       },
     },
-  });
-};
+  })
+}
 
-export const addKeyword = async (automationId: string, keyword: string) => {
-  return await client.automation.update({
+export const addKeyWord = async (automationId: string, keyword: string) => {
+  return client.automation.update({
     where: {
       id: automationId,
     },
@@ -135,24 +134,22 @@ export const addKeyword = async (automationId: string, keyword: string) => {
         },
       },
     },
-  });
-};
+  })
+}
 
 export const deleteKeywordQuery = async (id: string) => {
-  return await client.keyword.delete({
-    where: {
-      id,
-    },
-  });
-};
+  return client.keyword.delete({
+    where: { id },
+  })
+}
 
 export const addPost = async (
   autmationId: string,
   posts: {
-    postid: string;
-    caption?: string;
-    media: string;
-    mediaType: "IMAGE" | "VIDEO" | "CAROSEL_ALBUM";
+    postid: string
+    caption?: string
+    media: string
+    mediaType: 'IMAGE' | 'VIDEO' | 'CAROSEL_ALBUM'
   }[]
 ) => {
   return await client.automation.update({
@@ -166,5 +163,5 @@ export const addPost = async (
         },
       },
     },
-  });
-};
+  })
+}

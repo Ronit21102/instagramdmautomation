@@ -1,30 +1,30 @@
-import { InstagramBlue, PlaneBlue } from "@/icons";
-import React from "react";
+import { InstagramBlue, PlaneBlue } from '@/icons'
+import React from 'react'
 
 type Props = {
-  type: string;
+  type: string
   keywords: {
-    id: string;
-    word: string;
-    automationId: string | null;
-  }[];
-};
+    id: string
+    word: string
+    automationId: string | null
+  }[]
+}
 
 const ActiveTrigger = ({ keywords, type }: Props) => {
   return (
     <div className="bg-background-80 p-3 rounded-xl w-full">
       <div className="flex gap-x-2 items-center">
-        {type === "COMMENT" ? <InstagramBlue /> : <PlaneBlue />}
+        {type === 'COMMENT' ? <InstagramBlue /> : <PlaneBlue />}
         <p className="text-lg">
-          {type === "COMMENT"
-            ? "User comments on my post."
-            : "User sends me a direct message."}
+          {type === 'COMMENT'
+            ? 'User comments on my post.'
+            : 'User sends me a direct message.'}
         </p>
       </div>
       <p className="text-text-secondary">
-        {type === "COMMENT"
-          ? "If the user comments on a video that is setup to listen for keyworks, this automation will fire"
-          : "If the user send your a message that contains a keyword, this automation will fire"}
+        {type === 'COMMENT'
+          ? 'If the user comments on a video that is setup to listen for keyworks, this automation will fire'
+          : 'If the user send your a message that contains a keyword, this automation will fire'}
       </p>
       <div className="flex  ga-2 mt-5 flex-wrap">
         {keywords.map((word) => (
@@ -37,7 +37,7 @@ const ActiveTrigger = ({ keywords, type }: Props) => {
         ))}
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default ActiveTrigger;
+export default ActiveTrigger
