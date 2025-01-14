@@ -1,4 +1,4 @@
-import { Button } from '@/components/ui/button'
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -6,38 +6,39 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from '@/components/ui/card'
-import { CheckCircle, MenuIcon } from 'lucide-react'
-import Image from 'next/image'
-import Link from 'next/link'
+} from "@/components/ui/card";
+import { CheckCircle, MenuIcon } from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
+import { LogoSmall } from "@/svgs/logo-small";
 
 export default function Home() {
   const plans = [
     {
-      name: 'Free Plan',
-      description: 'Perfect for getting started',
-      price: '$0',
+      name: "Free Plan",
+      description: "Perfect for getting started",
+      price: "$0",
       features: [
-        'Boost engagement with target responses',
-        'Automate comment replies to enhance audience interaction',
-        'Turn followers into customers with targeted messaging',
+        "Boost engagement with target responses",
+        "Automate comment replies to enhance audience interaction",
+        "Turn followers into customers with targeted messaging",
       ],
-      cta: 'Get Started',
+      cta: "Get Started",
     },
     {
-      name: 'Smart AI Plan',
-      description: 'Advanced features for power users',
-      price: '$99',
+      name: "Smart AI Plan",
+      description: "Advanced features for power users",
+      price: "$99",
       features: [
-        'All features from Free Plan',
-        'AI-powered response generation',
-        'Advanced analytics and insights',
-        'Priority customer support',
-        'Custom branding options',
+        "All features from Free Plan",
+        "AI-powered response generation",
+        "Advanced analytics and insights",
+        "Priority customer support",
+        "Custom branding options",
       ],
-      cta: 'Upgrade Now',
+      cta: "Upgrade Now",
     },
-  ]
+  ];
   return (
     <main>
       <section className="relative bg-gradient-to-b from-slate-900 via-blue-900 to-bg">
@@ -46,19 +47,14 @@ export default function Home() {
           <div className="container px-4 py-8">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <div className="h-8 w-8 rounded-lg bg-white flex items-center justify-center font-bold">
-                  li
-                </div>
-                <span className="text-xl font-semibold text-primary-foreground">
-                  Slide
-                </span>
+                <LogoSmall />
               </div>
               <nav className="hidden space-x-6 text-sm text-blue-200 md:block">
                 <Link href="#features">Features</Link>
                 <Link href="#pricing">Pricing</Link>
                 <Link href="#about">About</Link>
               </nav>
-              <Button className="bg-white text-primary">
+              <Button className="bg-blue-600 text-primary">
                 <Link href="/dashboard">Login</Link>
               </Button>
             </div>
@@ -113,10 +109,7 @@ export default function Home() {
           </div>
           <div className="grid grid-cols-1 gap-6 mt-8 md:grid-cols-2 md:gap-8">
             {plans.map((plan, index) => (
-              <Card
-                key={index}
-                className="flex flex-col justify-between"
-              >
+              <Card key={index} className="flex flex-col justify-between">
                 <CardHeader>
                   <CardTitle>{plan.name}</CardTitle>
                   <CardDescription>{plan.description}</CardDescription>
@@ -130,10 +123,7 @@ export default function Home() {
                   </div>
                   <ul className="space-y-2">
                     {plan.features.map((feature, i) => (
-                      <li
-                        key={i}
-                        className="flex items-center"
-                      >
+                      <li key={i} className="flex items-center">
                         <CheckCircle className="mr-2 h-4 w-4 text-primary" />
                         <span className="text-sm text-muted-foreground">
                           {feature}
@@ -151,5 +141,5 @@ export default function Home() {
         </div>
       </section>
     </main>
-  )
+  );
 }
