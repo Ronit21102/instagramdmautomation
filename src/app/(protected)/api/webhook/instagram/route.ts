@@ -54,7 +54,7 @@ export async function POST(req: NextRequest) {
               automation.listener?.prompt,
               automation.User?.integrations[0].token!
             )
-
+            // tracking first response
             if (direct_message.status === 200) {
               const tracked = await trackResponses(automation.id, 'DM')
               if (tracked) {
